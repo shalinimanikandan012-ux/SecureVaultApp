@@ -1,1 +1,42 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureVault | Unlock</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+    <main class="auth-card">
+        <div class="brand-icon">⬡</div>
+        <p class="eyebrow">PRIVATE • ENCRYPTED • SECURE</p>
+        <h1>SecureVault</h1>
+        <p class="muted">Your personal encrypted space.</p>
+
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+            <div class="alert {{ category }}">{{ message }}</div>
+        {% endfor %}
+
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="password">Master password</label>
+            <input id="password" name="password" type="password"
+                   placeholder="Enter your master password"
+                   autocomplete="current-password" required minlength="12">
+
+            {% if is_setup %}
+                <label for="confirm">Confirm master password</label>
+                <input id="confirm" name="confirm" type="password"
+                       placeholder="Re-enter your password"
+                       autocomplete="new-password" required minlength="12">
+                <button type="submit">Create secure vault ↗</button>
+                <p class="hint">Choose a strong password and keep it safe.</p>
+            {% else %}
+                <button type="submit">Unlock my vault ↗</button>
+            {% endif %}
+        </form>
+        <p class="footer-note">AES-256-GCM encryption · Your privacy matters</p>
+    </main>
+</body>
+</html>

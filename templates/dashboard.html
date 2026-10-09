@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureVault | Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <a class="brand" href="{{ url_for('dashboard') }}">
+            <span class="brand-icon small">⬡</span>
+            SecureVault
+        </a>
+
+        <p class="nav-label">WORKSPACE</p>
+        <a class="nav-item active" href="{{ url_for('dashboard') }}">
+            ▦ &nbsp; Overview
+        </a>
+        <a class="nav-item" href="#notes">▤ &nbsp; Secure Notes</a>
+        <a class="nav-item" href="#files">▧ &nbsp; File Vault</a>
+
+        <div class="sidebar-bottom">
+            <p class="nav-label">SECURITY</p>
+            <a class="nav-item" href="#security">⚙ &nbsp; Security Info</a>
+
+            <form method="POST" action="{{ url_for('logout') }}">
+                <input type="hidden" name="csrf_token"
+                       value="{{ csrf_token() }}">
+                <button type="submit" class="text-button">
+                    🔒 Lock Vault
+                </button>
+            </form>
+
+            <p class="muted tiny">Protected with AES-256-GCM</p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">YOUR PRIVATE WORKSPACE</p>
+                <h1>Security Overview</h1>
+            </div>
+            <div class="secure-pill">
+                <span></span> Vault unlocked
+            </div>
+        </header>
+
+        <!-- FLASH MESSAGES -->
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+            <div class="alert {{ category }}">{{ message }}</div>
+        {% endfor %}
+
+        <!-- WELCOME -->
+        <section class="welcome">
+            <div>
+                <p class="eyebrow">WELCOME TO YOUR VAULT</p>
+                <h2>Your data. Your control.</h2>
+                <p class="muted">
+                    Keep your private notes and files protected.
+                </p>
+            </div>
+            <div class="welcome-symbol">⬡</div>
+        </section>
+
+        <!-- STATISTICS -->
+        <section class="stats-grid">
+            <article class="stat-card">
+                <span class="stat-icon purple">▤</span>
+                <p class="muted">Secure notes</p>
+                <h2>{{ note_count }}</h2>
+                <span class="tiny muted">Encrypted records</span>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon blue">▧</span>
+                <p class="muted">Vault files</p>
+                <h2>{{ file_count }}</h2>
+                <span class="tiny muted">Encrypted records</span>
+            </article>
+
+            <article class="stat-card">
+                <span class="stat-icon green">✓</span>
+                <p class="muted">Encryption</p>
+                <h2 class="small-heading">AES-256-GCM</h2>
+                <span class="tiny muted">Authenticated encryption</span>
+            </article>
+        </section>
+
+        <!-- NOTES AND FILES -->
+        <section class="content-grid">
+
+            <!-- SECURE NOTES -->
+            <article class="panel" id="notes">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">PRIVATE MEMOS</p>
+                        <h2>Secure Notes</h2>
+                    </div>
+                </div>
+
+                <!-- ADD NOTE FORM -->
+                <form method="POST"
+                      action="{{ url_for('add_note') }}">
+
+                    <input type="hidden" name="csrf_token"
+                           value="{{ csrf_token() }}">
+
+                    <label for="title">Note title</label>
+                    <input
+                        id="title"
+                        name="title"
+                        type="text"
+                        maxlength="150"
+                        placeholder="e.g. Project ideas"
+                        required
+                    >
+
+                    <label for="content">Note content</label>
+                    <textarea
+                        id="content"
+                        name="content"
+                        maxlength="20000"
+                        placeholder="Write your private note..."
+                        required
+                    ></textarea>
+
+                    <button type="submit">+ Encrypt &amp; Save Note</button>
+                </form>
+
+                <!-- SAVED NOTES -->
+                <div class="record-list">
+                    {% for note in notes %}
+                    <article class="record">
+
+                        <div class="record-top">
+                            <div>
+                                <h3>{{ note.title }}</h3>
+                                <p class="tiny muted">{{ note.created_at }}</p>
+                            </div>
+                            <span class="tag">ENCRYPTED</span>
+                        </div>
+
+                        <p class="note-preview">{{ note.content }}</p>
+
+                        <div class="record-actions">
+                            <form method="POST"
+                                  action="{{ url_for('delete_record', record_id=note.id) }}">
+
+                                <input type="hidden" name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <button class="text-button danger"
+                                        type="submit"
+                                        onclick="return confirm('Delete this note?')">
+                                    Delete note
+                                </button>
+                            </form>
+                        </div>
+
+                    </article>
+                    {% else %}
+                    <p class="empty-state">
+                        No notes yet. Create your first encrypted note above.
+                    </p>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <!-- FILE VAULT -->
+            <article class="panel" id="files">
+                <p class="eyebrow">DOCUMENT PROTECTION</p>
+                <h2>File Vault</h2>
+                <p class="muted">
+                    Files are encrypted before being stored.
+                </p>
+
+                <!-- UPLOAD FORM -->
+                <form method="POST"
+                      enctype="multipart/form-data"
+                      action="{{ url_for('upload_file') }}"
+                      class="stack-form">
+
+                    <input type="hidden" name="csrf_token"
+                           value="{{ csrf_token() }}">
+
+                    <label for="file">Choose a file (max 16 MB)</label>
+                    <input
+                        id="file"
+                        type="file"
+                        name="file"
+                        required
+                    >
+
+                    <button type="submit">↑ Encrypt &amp; Upload</button>
+                </form>
+
+                <!-- SAVED FILES -->
+                <div class="record-list">
+                    {% for file in files %}
+                    <article class="record">
+
+                        <h3>{{ file.name }}</h3>
+                        <p class="tiny muted">{{ file.created_at }}</p>
+                        <span class="tag">ENCRYPTED</span>
+
+                        <div class="record-actions">
+                            <a class="text-button"
+                               href="{{ url_for('download_file', record_id=file.id) }}">
+                                Download &amp; decrypt
+                            </a>
+
+                            <form method="POST"
+                                  action="{{ url_for('delete_record', record_id=file.id) }}">
+
+                                <input type="hidden" name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <button class="text-button danger"
+                                        type="submit"
+                                        onclick="return confirm('Delete this file?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+
+                    </article>
+                    {% else %}
+                    <p class="empty-state">
+                        Your encrypted files will appear here.
+                    </p>
+                    {% endfor %}
+                </div>
+            </article>
+
+        </section>
+
+        <!-- SECURITY FOOTER -->
+        <footer class="app-footer" id="security">
+            <span>SECUREVAULT · PRIVATE BY DESIGN</span>
+            <span>Auto-lock after inactivity</span>
+        </footer>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
