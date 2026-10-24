@@ -1,0 +1,6 @@
+{
+  "name": "SecureVaultApp",
+  "description": "Enterprise Cybersecurity & Cryptographic Vault with AES-256-GCM encryption, Argon2id/PBKDF2 key derivation, MFA TOTP, tamper-evident hash-chain audit logging, encrypted notes, secure file vault, and digital forensics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
